@@ -1,4 +1,4 @@
-# sqflite_test_pagination
+# flutter_drift_offline_infinite_scroll_pagination 
 
 A new Flutter project.
 
