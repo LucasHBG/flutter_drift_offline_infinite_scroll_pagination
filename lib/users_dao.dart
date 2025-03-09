@@ -1,10 +1,10 @@
 import 'package:drift/drift.dart';
-import 'package:drift_test_pagination/app_database.dart';
-import 'package:drift_test_pagination/users.dart';
+
+import 'database/app_database.dart';
 
 part 'users_dao.g.dart';
 
-@DriftAccessor(tables: [Users])
+@DriftAccessor(include: {'database/create_tables.drift'})
 class UsersDao extends DatabaseAccessor<AppDatabase> with _$UsersDaoMixin {
   UsersDao(super.db);
 

@@ -1,8 +1,5 @@
-import 'dart:math';
-
 import 'package:drift/drift.dart';
-import 'package:drift_test_pagination/app_database.dart';
-import 'package:drift_test_pagination/users.dart';
+import 'package:drift_test_pagination/database/app_database.dart';
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
@@ -17,10 +14,9 @@ void main() async {
 
   final List<UsersCompanion> usersList = List.generate(50, (index) {
     return UsersCompanion.insert(
-      id: "${index + 1}",
-      active: Random().nextBool(),
-      sex: index % 2 == 0 ? AnimalSex.male : AnimalSex.female,
-      name: 'User${index + 1}',
+      localId: "${index + 1}",
+      firebaseEmail: "Email ${index + 1}",
+      firebaseUid: "id aleatorio ${index + 1}",
     );
   });
 

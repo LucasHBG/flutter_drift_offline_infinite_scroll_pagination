@@ -1,0 +1,197 @@
+-- Enable foreign key support
+-- PRAGMA foreign_keys = ON
+
+import '../enums.dart';
+
+--------------------------------------------
+--------------- Users TABLE ----------------
+--------------------------------------------
+
+-- Create the users table
+CREATE TABLE IF NOT EXISTS users (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    firebase_uid TEXT NOT NULL UNIQUE,
+    firebase_email TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+) AS User;
+
+--------------------------------------------
+------------- Accounts TABLE ---------------
+--------------------------------------------
+
+-- Create the accounts table
+CREATE TABLE IF NOT EXISTS accounts (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    created_by TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_by) REFERENCES users (local_id)
+) AS Account;
+
+--------------------------------------------
+------------- Animals TABLE ----------------
+--------------------------------------------
+
+-- Create table for animal breeds
+CREATE TABLE IF NOT EXISTS animal_breeds (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    acronym TEXT NOT NULL,
+    name TEXT NOT NULL,
+    popularity INTEGER NOT NULL DEFAULT 999,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (name, acronym)
+) AS AnimalBreed;
+
+-- Create table for animal coats
+CREATE TABLE IF NOT EXISTS animal_coats (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    acronym TEXT NOT NULL,
+    name TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (name, acronym)
+) AS AnimalCoat;
+
+-- Create table for animal categories
+CREATE TABLE IF NOT EXISTS animal_categories (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    name TEXT NOT NULL UNIQUE,
+    sex ENUM(AnimalSexEnum) NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+) AS AnimalCategory;
+
+-- Create table for animals
+CREATE TABLE IF NOT EXISTS animals (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    age_in_months INTEGER NOT NULL CHECK (age_in_months >= 0),
+    breed_id TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    sex ENUM(AnimalSexEnum) NOT NULL,
+    birth_date TEXT DEFAULT NULL,
+    coat_id TEXT DEFAULT NULL,
+    blood_degree REAL DEFAULT NULL CHECK (blood_degree >= 0 AND blood_degree <= 100),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (breed_id) REFERENCES animal_breeds (local_id),
+    FOREIGN KEY (category_id) REFERENCES animal_categories (local_id),
+    FOREIGN KEY (coat_id) REFERENCES animal_coats (local_id)
+) AS Animal;
+
+-- Create table for animal identifiers
+CREATE TABLE IF NOT EXISTS animal_identifiers (
+    animal_local_id TEXT NOT NULL,
+    type ENUM(AnimalIdentifierEnum) NOT NULL,
+    value TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (animal_local_id, type),
+    FOREIGN KEY (animal_local_id) REFERENCES animals (local_id)
+) AS AnimalIdentifier;
+
+-- Create table for customer animals
+CREATE TABLE IF NOT EXISTS customer_animals (
+    customer_local_id TEXT NOT NULL,
+    animal_local_id TEXT NOT NULL,
+    allotment_id TEXT DEFAULT NULL,
+    ranch_id TEXT DEFAULT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (customer_local_id, animal_local_id),
+    FOREIGN KEY (customer_local_id) REFERENCES customers (local_id),
+    FOREIGN KEY (animal_local_id) REFERENCES animals (local_id),
+    FOREIGN KEY (customer_local_id, allotment_id) REFERENCES allotments (customer_local_id, local_id),
+    FOREIGN KEY (customer_local_id, ranch_id) REFERENCES ranches (customer_local_id, local_id)
+) AS CustomerAnimal;
+
+--------------------------------------------
+------------ Allotments TABLE --------------
+--------------------------------------------
+
+-- Create table for allotments
+CREATE TABLE IF NOT EXISTS allotments (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    customer_local_id TEXT NOT NULL,
+    account_local_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    abbreviation TEXT NOT NULL,
+    creation_date TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_local_id, account_local_id) REFERENCES customers (local_id, account_local_id),
+    UNIQUE (local_id, customer_local_id)
+) AS Allotment;
+
+--------------------------------------------
+------------ Customers TABLE ---------------
+--------------------------------------------
+
+-- Create the customers table
+CREATE TABLE IF NOT EXISTS customers (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    contact_local_id TEXT NOT NULL,
+    account_local_id TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_local_id, account_local_id) REFERENCES contacts (local_id, account_local_id),
+    UNIQUE (local_id, account_local_id)
+) AS Customer;
+
+--------------------------------------------
+------------ Ranches TABLE ---------------
+--------------------------------------------
+
+-- Create the ranches table
+CREATE TABLE IF NOT EXISTS ranches (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    customer_local_id TEXT NOT NULL,
+    account_local_id TEXT NOT NULL,
+    name TEXT NOT NULL,
+    country INTEGER NOT NULL,
+    district INTEGER NOT NULL,
+    municipality INTEGER NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_local_id, account_local_id) REFERENCES customers (local_id, account_local_id),
+    UNIQUE (local_id, customer_local_id)
+) AS Ranch;
+
+--------------------------------------------
+------------- Contacts TABLE ---------------
+--------------------------------------------
+
+-- Create the contacts table
+CREATE TABLE IF NOT EXISTS contacts (
+    local_id TEXT NOT NULL PRIMARY KEY,
+    remote_id TEXT,
+    role ENUM(RoleEnum) NOT NULL DEFAULT 'None',
+    jobs ENUM(JobEnum),
+    is_active INTEGER NOT NULL DEFAULT 1,
+    account_local_id TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (account_local_id) REFERENCES accounts (local_id),
+    UNIQUE (local_id, account_local_id)
+) AS Contact;
+
+--------------------------------------------
+------------- Unique Indexes ---------------
+--------------------------------------------
+
+CREATE INDEX animals_category_id_index ON animals (category_id);
+CREATE INDEX animal_identifiers_animal_id_index ON animal_identifiers (animal_local_id);
+CREATE UNIQUE INDEX allotments_customer_id_name_uindex ON allotments (customer_local_id, LOWER(name));
+CREATE UNIQUE INDEX allotments_customer_id_abbreviation_uindex ON allotments (customer_local_id, LOWER(abbreviation));
+CREATE INDEX idx_allotments_customer_id ON allotments (customer_local_id);

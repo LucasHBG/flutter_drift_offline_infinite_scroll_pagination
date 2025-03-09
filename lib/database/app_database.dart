@@ -1,13 +1,16 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
-import 'package:drift_test_pagination/users.dart';
 import 'package:drift_test_pagination/users_dao.dart';
 import 'package:path_provider/path_provider.dart';
+import '../enums.dart';
 import 'connection/connection.dart' as impl;
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [Users], daos: [UsersDao])
+@DriftDatabase(
+  daos: [UsersDao],
+  include: {'create_tables.drift'},
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? e])
       : super(
@@ -33,7 +36,6 @@ class AppDatabase extends _$AppDatabase {
         if (details.wasCreated) {
           // Create a bunch of default values so the app doesn't look too empty
           // on the first start.
-          
         }
 
         // This follows the recommendation to validate that the database schema
