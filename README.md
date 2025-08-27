@@ -1,12 +1,8 @@
 # flutter_drift_offline_infinite_scroll_pagination 
 
-A new Flutter project.
+Simple yet direct way to implement a basic infinite scroll pagination feature with Drift ORM. 
 
 ## Getting Started
-
-```typescript
-let a = Math.random();
-```
 
 ```mermaid
 erDiagram 
